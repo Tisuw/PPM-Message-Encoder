@@ -1,0 +1,4 @@
+build_steganography:
+   stage: build
+   script:
+      - make
