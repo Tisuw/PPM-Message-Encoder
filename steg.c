@@ -80,12 +80,40 @@ struct PPM *readPPM(const char *filename)
 	return	img;
 }
 
+struct PPM *dcopy(const struct PPM *img){
+	
+	struct PPM *newimg = malloc(sizeof(*newimg));
+	newimg->height = img->height;
+	newimg->width = img->width;
+	newimg->max = img->max;
+	newimg->data = calloc(((newimg->width)*(newimg->height)), sizeof(struct Pixel));
+	for (int i = 0; i < ((newimg->width)*(newimg->height)); i++){
+		newimg->data[i].red = img->data[i].red;
+		newimg->data[i].green = img->data[i].green;
+		newimg->data[i].blue = img->data[i].blue;
+	
+	}
+	return newimg;
+}
+
 /* Encode the string text into the red channel of image	img.
  * Returns a new struct	PPM, or	NULL on	error. */
 struct PPM *encode(const char *text, const struct PPM *img)
 {
 	/*	TODO: Question 2c */
-	return	NULL;
+	struct PPM *newimg = malloc(sizeof(*newimg));
+	newimg = dcopy(img);
+	
+	int len = strlen(text); // readability
+	int start = (rand() % len);
+	
+	if (((img->width*img->height)-start)<len)
+		start = (img->width*img->height) - len;
+	for (int i = 0; i<len; i++){
+		newimg->data[start+i].red = text[i];
+	}
+	
+	return	newimg;
 }
 
 /* Extract the string encoded in the red channel of	newimg,	by comparing it
@@ -109,6 +137,8 @@ int	main(int argc, char	*argv[])
 
 		struct PPM *img =	readPPM(argv[2]);
 		showPPM(img);
+		
+		encode("help", img);
 
 	} else	if (argc ==	3 && strcmp(argv[1], "e") == 0)	{
 		/* Mode "e" -	encode PPM */
