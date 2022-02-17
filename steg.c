@@ -148,7 +148,7 @@ char *decode(const struct PPM *oldimg, const struct	PPM	*newimg)
 			return message;
 		}
 	}
-	printf("Error: No difference in files found");
+	printf("Error: No difference in files found\n");
 	exit(1);
 }
 
@@ -207,7 +207,7 @@ int	main(int argc, char	*argv[])
 		message = decode(oldimg, newimg);
 
 		/* print the decoded message to	stdout */
-		printf("%s", message);
+		printf("%s\n", message);
 
 	} else	{
 		fprintf(stderr, "Unrecognised	or incomplete command line.\n");
