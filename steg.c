@@ -115,8 +115,8 @@ struct PPM *encode(const char *text, const struct PPM *img)
 	int start = (rand() % len);
 	
 	//check theres enough space for the message from start, if not, set the start as close to the end as possible
-	if (((img->width*img->height)-start)<len)
-		start = (img->width*img->height) - len;
+	if (((img->width*img->height)-start)<(len+1))
+		start = (img->width*img->height) - (len+1);
 	
 	//cycle through string, changing value of red values in array, starting at start and finishing with /0 character
 	for (int i = 0; i<len+1; i++){
