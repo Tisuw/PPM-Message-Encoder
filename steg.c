@@ -27,17 +27,17 @@ struct PPM *getPPM(FILE	* f)
 	
 	struct PPM *ppm1 = malloc(sizeof(*ppm1));
 	
-	fscanf(f, "%*s %i", (*ppm1).width);
-	fscanf(f, "%i", (*ppm1).height);
-	fscanf(f, "%i", ppm1->max);
+	fscanf(f, "%*s %i", &(ppm1->width));
+	fscanf(f, "%i", &(ppm1->height));
+	fscanf(f, "%i", &(ppm1->max));
 	
-	(*ppm1).data = calloc(((*ppm1).width*(*ppm1).height), sizeof(struct Pixel));
+	ppm1->data = calloc(((ppm1->width)*(ppm1->height)), sizeof(struct Pixel));
 	
-	for (int i = 0; i < ((*ppm1).width*(*ppm1).height); i++){
-		fscanf(f, "%i %i %i", (*ppm1).data[i].red, (*ppm1).data[i].green, (*ppm1).data[i].blue);
+	for (int i = 0; i < ((ppm1->width)*(ppm1->height)); i++){
+		fscanf(f, "%i %i %i", &((ppm1->data)[i].red), &((ppm1->data)[i].green), &((ppm1->data)[i].blue));
 	}
 	
-	printf("This is the contents of PPM1: width = %i\n height = %i\n max = %i", (*ppm1).width, (*ppm1).height, (*ppm1).max);
+	//printf("This is the contents of PPM1: width = %i\n height = %i\n max = %i\n", ppm1->width, ppm1->height, ppm1->max);
 		
 	return ppm1;
 }
@@ -46,7 +46,13 @@ struct PPM *getPPM(FILE	* f)
 void showPPM(const struct PPM *img)
 {
 	/*	TODO: Question 2b */
-	//printf("\n this is a test %i\n", (*img).width);
+	for(int i = 0; i<(img->height*img->width); i++){
+		if(i%img->width == 0){
+			printf("\n");
+		}
+		printf("%i %i %i ", img->data[i].red, img->data[i].green, img->data[i].blue);
+	}
+	printf("\n");
 }
 
 /* Opens and reads a PPM file, returning a pointer to a	new	struct PPM.
