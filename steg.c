@@ -50,7 +50,7 @@ void showPPM(const struct PPM *img)
 		if(i%img->width == 0){
 			printf("\n");
 		}
-		printf("%i %i %i ", img->data[i].red, img->data[i].green, img->data[i].blue);
+		printf("%i %i %i	", img->data[i].red, img->data[i].green, img->data[i].blue);
 	}
 	printf("\n");
 }
@@ -91,7 +91,6 @@ struct PPM *dcopy(const struct PPM *img){
 		newimg->data[i].red = img->data[i].red;
 		newimg->data[i].green = img->data[i].green;
 		newimg->data[i].blue = img->data[i].blue;
-	
 	}
 	return newimg;
 }
@@ -101,15 +100,26 @@ struct PPM *dcopy(const struct PPM *img){
 struct PPM *encode(const char *text, const struct PPM *img)
 {
 	/*	TODO: Question 2c */
+	
+	//create a new PPM to return
 	struct PPM *newimg = malloc(sizeof(*newimg));
 	newimg = dcopy(img);
 	
 	int len = strlen(text); // readability
+	
+	//check the image is big enough for the message
+	if (len > ((newimg->width)*(newimg->height))){
+		printf("Error: message too big for file");
+		exit(1);
+	}
 	int start = (rand() % len);
 	
+	//check theres enough space for the message from start, if not, set the start as close to the end as possible
 	if (((img->width*img->height)-start)<len)
 		start = (img->width*img->height) - len;
-	for (int i = 0; i<len; i++){
+	
+	//cycle through string, changing value of red values in array, starting at start and finishing with /0 character
+	for (int i = 0; i<len+1; i++){
 		newimg->data[start+i].red = text[i];
 	}
 	
@@ -122,7 +132,24 @@ struct PPM *encode(const char *text, const struct PPM *img)
 char *decode(const struct PPM *oldimg, const struct	PPM	*newimg)
 {
 	/*	TODO: Question 2d */
-	return	NULL;
+	//Create a string for the message, the size cannot be bigger than the image
+	char *message = calloc((newimg->width)*(newimg->height), sizeof(char));
+	
+	//Iterate through the arrays until you find a difference
+	for (int i = 0; i < ((newimg->width)*(newimg->height)); i++){
+		if (oldimg->data[i].red != newimg->data[i].red){
+			//Write the hidden string into message, wait for "/0"
+			int j = 0;
+			while(newimg->data[i].red != 0){
+				message[j] = newimg->data[i].red;
+				j++;
+				i++;
+			}
+			return message;
+		}
+	}
+	printf("Error: No difference in files found");
+	exit(1);
 }
 
 /* TODO: Question 3	*/
@@ -138,35 +165,49 @@ int	main(int argc, char	*argv[])
 		struct PPM *img =	readPPM(argv[2]);
 		showPPM(img);
 		
-		encode("help", img);
+		struct PPM *newimg = encode("asdfgh", img);
+		printf("%i", (int)strlen("asdfgh"));
+		showPPM(newimg);
+		printf("\n%s\n", decode(img, newimg));
 
 	} else	if (argc ==	3 && strcmp(argv[1], "e") == 0)	{
 		/* Mode "e" -	encode PPM */
 
 		struct PPM *oldimg = readPPM(argv[2]);
 
-		/* TODO: prompt for a	message	from the user, and read	it into	a string */
+		/* prompt for a	message	from the user, and read	it into	a string */
+		char *message = malloc(oldimg->width*oldimg->height);
+		printf("Please enter your message");
+		scanf("%s", message);
 
 		struct PPM *newimg;
-		/* TODO: encode the text into	the	image with encode, and assign to newimg	*/
+		/* encode the text into	the	image with encode, and assign to newimg	*/
+		newimg = encode(message, oldimg);
 
-		/* TODO: write the image to stdout with showPPM */
+		/* write the image to stdout with showPPM */
+		
+		showPPM(newimg);
 
 	} else	if (argc ==	4 && strcmp(argv[1], "d") == 0)	{
 		/* Mode "d" -	decode PPM */
 
 		struct PPM *oldimg;
-		/* TODO: get original	file filename from argv, load it with
+		/* get original	file filename from argv, load it with
 			 readPPM, then assign to	oldimg	*/
-
+		oldimg = readPPM(argv[2]);
+		
+		
 		struct PPM *newimg;
-		/* TODO: get encoded file	filename from argv,	load it	with
+		/*  get encoded file	filename from argv,	load it	with
 			 readPPM, then assign to	newimg	*/
-
+		newimg = readPPM(argv[3]);
+		
 		char *message;
-		/* TODO: decode the encodedPPM with the comparisonPPM	and	assign to message */
+		/* decode the encodedPPM with the comparisonPPM	and	assign to message */
+		message = decode(oldimg, newimg);
 
-		/* TODO: print the decoded message to	stdout */
+		/* print the decoded message to	stdout */
+		printf("%s", message);
 
 	} else	{
 		fprintf(stderr, "Unrecognised	or incomplete command line.\n");
