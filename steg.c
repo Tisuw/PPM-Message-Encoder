@@ -155,22 +155,22 @@ char *decode(const struct PPM *oldimg, const struct	PPM	*newimg)
 	/*	TODO: Question 2d */
 	//Create a string for the message, the size cannot be bigger than the image
 	char *message = calloc((newimg->numPix), sizeof(char));
-	
+	int j = 0;
 	//Iterate through the arrays until you find a difference
 	for (int i = 0; i < (newimg->numPix); i++){
 		if (oldimg->data[i].red != newimg->data[i].red){
-			//Write the hidden string into message, wait for "/0"
-			int j = 0;
-			while(newimg->data[i].red != 0){
-				message[j] = newimg->data[i].red;
-				j++;
-				i++;
-			}
-			return message;
+			//Write the hidden string into message
+			message[j] = newimg->data[i].red;
+			j++;
 		}
 	}
-	printf("Error: No difference in files found\n");
-	exit(1);
+	message[j] = 0;
+	if (message[0] != 0)
+		return message;
+	else {
+		printf("Error: No difference in files found\n");
+		exit(1);
+	}
 }
 
 
@@ -194,10 +194,13 @@ int	main(int argc, char	*argv[])
 		struct PPM *img =	readPPM(argv[2]);
 		showPPM(img);
 		
-		struct PPM *newimg = encode("asdfgh", img);
-		printf("%i", (int)strlen("asdfgh"));
+		struct PPM *newimg = encode("ah", img);
+	//	printf("%i", (int)strlen("asdfgh"));
 		showPPM(newimg);
 		printf("\n%s\n", decode(img, newimg));
+		freePPM(img);
+		freePPM(newimg);
+		showPPM(newimg);
 
 	} else	if (argc ==	3 && strcmp(argv[1], "e") == 0)	{
 		/* Mode "e" -	encode PPM */
@@ -216,6 +219,8 @@ int	main(int argc, char	*argv[])
 		/* write the image to stdout with showPPM */
 		
 		showPPM(newimg);
+		freePPM(oldimg);
+		freePPM(newimg);
 
 	} else	if (argc ==	4 && strcmp(argv[1], "d") == 0)	{
 		/* Mode "d" -	decode PPM */
@@ -237,6 +242,9 @@ int	main(int argc, char	*argv[])
 
 		/* print the decoded message to	stdout */
 		printf("%s\n", message);
+		
+		freePPM(oldimg);
+		freePPM(newimg);
 
 	} else	{
 		fprintf(stderr, "Unrecognised	or incomplete command line.\n");
