@@ -112,18 +112,15 @@ struct PPM *encode(const char *text, const struct PPM *img)
 	int len = strlen(text); // readability
 	
 	//check the image is big enough for the message
-	if (5*(len+1) > (newimg->numPix)){
+	if (100*(len+1) > (newimg->numPix)){
 		printf("Error: message too big for file");
 		exit(1);
 	}
 	int start;
 	do {
 		//Pick a start point for the message
-		start = (rand() % newimg->numPix);
-	
-		//check theres enough space for the message from start to the end of the image, if not, set the start as close to the end as possible
-		if (((newimg->numPix)-start)<(5*(len+1)))
-			start = (newimg->numPix) - (5*(len+1));
+		start = (rand() % (newimg->numPix) - (100*(len+1)));
+
 		//Check the value of the starting red pixel is not equal to the first character of the message, else find a new start red pixel
 	}while (newimg->data[start].red == text[0]);
 	
@@ -135,7 +132,7 @@ struct PPM *encode(const char *text, const struct PPM *img)
 	for (int i = 1; i<len+1; i++){
 		do{
 			//select a value between 1 and 5, and check that the red value in the data array is not the same as the character, else randomise again
-			randomiser = ((rand() % 4)+1);
+			randomiser = ((rand() % 99)+1);
 		}while(newimg->data[start+randomiser].red == text[i]);
 		
 		//change the value of the red pixel at the randomly selected location
@@ -219,8 +216,8 @@ int	main(int argc, char	*argv[])
 		/* write the image to stdout with showPPM */
 		
 		showPPM(newimg);
-		freePPM(oldimg);
-		freePPM(newimg);
+		//freePPM(oldimg);
+		//freePPM(newimg);
 
 	} else	if (argc ==	4 && strcmp(argv[1], "d") == 0)	{
 		/* Mode "d" -	decode PPM */
@@ -243,8 +240,8 @@ int	main(int argc, char	*argv[])
 		/* print the decoded message to	stdout */
 		printf("%s\n", message);
 		
-		freePPM(oldimg);
-		freePPM(newimg);
+		//freePPM(oldimg);
+		//freePPM(newimg);
 
 	} else	{
 		fprintf(stderr, "Unrecognised	or incomplete command line.\n");
