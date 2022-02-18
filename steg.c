@@ -13,6 +13,7 @@ struct Pixel {
 /* An image	loaded from	a PPM file.	*/
 struct PPM {
 	/*	TODO: Question 1 */
+	char fileType[3];
 	int height;
 	int width;
 	int max;
@@ -28,7 +29,8 @@ struct PPM *getPPM(FILE	* f)
 	
 	struct PPM *ppm1 = malloc(sizeof(*ppm1));
 	
-	fscanf(f, "%*s %i", &(ppm1->width));
+	fscanf(f, "%s", (ppm1->fileType));
+	fscanf(f, "%i", &(ppm1->width));
 	fscanf(f, "%i", &(ppm1->height));
 	fscanf(f, "%i", &(ppm1->max));
 	
@@ -49,6 +51,7 @@ struct PPM *getPPM(FILE	* f)
 void showPPM(const struct PPM *img)
 {
 	/*	TODO: Question 2b */
+	printf("%s\n%i %i\n%i", img->fileType, img->width, img->height, img->max); 
 	for(int i = 0; i<(img->numPix); i++){
 		if(i%img->width == 0){
 			printf("\n");
@@ -86,6 +89,7 @@ struct PPM *readPPM(const char *filename)
 struct PPM *dcopy(const struct PPM *img){
 	
 	struct PPM *newimg = malloc(sizeof(*newimg));
+	strcpy(newimg->fileType, img->fileType);
 	newimg->height = img->height;
 	newimg->width = img->width;
 	newimg->max = img->max;
@@ -112,14 +116,14 @@ struct PPM *encode(const char *text, const struct PPM *img)
 	int len = strlen(text); // readability
 	
 	//check the image is big enough for the message
-	if (100*(len+1) > (newimg->numPix)){
+	if ((5*len) > (newimg->numPix)){
 		printf("Error: message too big for file");
 		exit(1);
 	}
 	int start;
 	do {
 		//Pick a start point for the message
-		start = (rand() % (newimg->numPix) - (100*(len+1)));
+		start = (rand() % ((newimg->numPix) - (5*len)));
 
 		//Check the value of the starting red pixel is not equal to the first character of the message, else find a new start red pixel
 	}while (newimg->data[start].red == text[0]);
@@ -129,10 +133,10 @@ struct PPM *encode(const char *text, const struct PPM *img)
 	
 	//cycle through string, changing value of (randomly selected) red pixels in newimg->data array, finishing with /0 character.
 	int randomiser;
-	for (int i = 1; i<len+1; i++){
+	for (int i = 1; i<len; i++){
 		do{
 			//select a value between 1 and 5, and check that the red value in the data array is not the same as the character, else randomise again
-			randomiser = ((rand() % 99)+1);
+			randomiser = ((rand() % 4)+1);
 		}while(newimg->data[start+randomiser].red == text[i]);
 		
 		//change the value of the red pixel at the randomly selected location
@@ -206,7 +210,7 @@ int	main(int argc, char	*argv[])
 
 		/* prompt for a	message	from the user, and read	it into	a string */
 		char *message = malloc(oldimg->width*oldimg->height);
-		printf("Please enter your message");
+		fprintf(stderr, "Please enter your message:\n");
 		scanf("%s", message);
 
 		struct PPM *newimg;
@@ -216,7 +220,7 @@ int	main(int argc, char	*argv[])
 		/* write the image to stdout with showPPM */
 		
 		showPPM(newimg);
-		//freePPM(oldimg);
+	//	freePPM(oldimg);
 		//freePPM(newimg);
 
 	} else	if (argc ==	4 && strcmp(argv[1], "d") == 0)	{
@@ -241,7 +245,7 @@ int	main(int argc, char	*argv[])
 		printf("%s\n", message);
 		
 		//freePPM(oldimg);
-		//freePPM(newimg);
+	//	freePPM(newimg);
 
 	} else	{
 		fprintf(stderr, "Unrecognised	or incomplete command line.\n");
