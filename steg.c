@@ -133,10 +133,17 @@ struct PPM *encode(const char *text, const struct PPM *img)
 	
 	//cycle through string, changing value of (randomly selected) red pixels in newimg->data array, finishing with /0 character.
 	int randomiser;
+	int count;
 	for (int i = 1; i<len; i++){
+		count = 0;
 		do{
 			//select a value between 1 and 5, and check that the red value in the data array is not the same as the character, else randomise again
 			randomiser = ((rand() % 4)+1);
+			if (count>50) {
+				fprintf(stderr, "The encoder is having trouble finding a pixel to hide your message, please try again");
+				exit(1);
+			}
+			count++;
 		}while(newimg->data[start+randomiser].red == text[i]);
 		
 		//change the value of the red pixel at the randomly selected location
@@ -218,7 +225,6 @@ int	main(int argc, char	*argv[])
 		char *message = malloc(oldimg->numPix);
 		fprintf(stderr, "Please enter your message:\n");
 		scanf("%[^\n]", message);
-		fprintf(stderr, "%s\n", message);
 		struct PPM *newimg;
 		/* encode the text into	the	image with encode, and assign to newimg	*/
 		newimg = encode(message, oldimg);
