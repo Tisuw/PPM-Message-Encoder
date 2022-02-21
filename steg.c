@@ -17,7 +17,9 @@ struct PPM {
 	int height;
 	int width;
 	int max;
+	char *comment;
 	int numPix;
+
 	struct Pixel *data;
 };
 
@@ -28,12 +30,26 @@ struct PPM *getPPM(FILE	* f)
 	/*	TODO: Question 2a */
 	
 	struct PPM *ppm1 = malloc(sizeof(*ppm1));
+	char *check = malloc(1);
 	
 	fscanf(f, "%s", (ppm1->fileType));
-	fscanf(f, "%i", &(ppm1->width));
+	fscanf(f, "%s", check);
+	printf("%s", check);
+	printf("%d\n", !strcmp(check, "#"));
+	if (!(strcmp(check, "#"))){
+		fscanf(f, "%[^\n]", (ppm1->comment));
+		printf("I am getting here %s\n", ppm1->comment);
+		fscanf(f, "%i", &(ppm1->width));
+		printf("%d\n", ppm1->width);
+	}
+	else{
+		rewind(f);
+		fscanf(f, "%*s %i", &(ppm1->width));
+		ppm1->comment = "";
+	}
 	fscanf(f, "%i", &(ppm1->height));
 	fscanf(f, "%i", &(ppm1->max));
-	
+	printf("I am here %d\n", ppm1->height);
 	ppm1->numPix = (ppm1->width)*(ppm1->height);
 	
 	ppm1->data = calloc(ppm1->numPix, sizeof(struct Pixel));
@@ -42,7 +58,7 @@ struct PPM *getPPM(FILE	* f)
 		fscanf(f, "%i %i %i", &((ppm1->data)[i].red), &((ppm1->data)[i].green), &((ppm1->data)[i].blue));
 	}
 	
-	//printf("This is the contents of PPM1: width = %i\n height = %i\n max = %i\n", ppm1->width, ppm1->height, ppm1->max);
+	printf("This is the contents of PPM1: width = %i\n height = %i\n max = %i\n comment = %s\n", ppm1->width, ppm1->height, ppm1->max, ppm1->comment);
 		
 	return ppm1;
 }
@@ -51,7 +67,7 @@ struct PPM *getPPM(FILE	* f)
 void showPPM(const struct PPM *img)
 {
 	/*	TODO: Question 2b */
-	printf("%s\n%i %i\n%i", img->fileType, img->width, img->height, img->max); 
+	printf("%s\n%s\n%i %i\n%i", img->fileType, img->comment, img->width, img->height, img->max); 
 	for(int i = 0; i<(img->numPix); i++){
 		if(i%img->width == 0){
 			printf("\n");
@@ -140,7 +156,7 @@ struct PPM *encode(const char *text, const struct PPM *img)
 			//select a value between 1 and 5, and check that the red value in the data array is not the same as the character, else randomise again
 			randomiser = ((rand() % 4)+1);
 			if (count>50) {
-				fprintf(stderr, "The encoder is having trouble finding a pixel to hide your message, please try again");
+				fprintf(stderr, "The encoder is having trouble finding a pixel to hide your message, please try again/n");
 				exit(1);
 			}
 			count++;
@@ -182,13 +198,9 @@ char *decode(const struct PPM *oldimg, const struct	PPM	*newimg)
 }
 
 
-void freePPM(struct PPM *pokemon){
-//	printf("freeing data now\n");
-	free(pokemon->data);
-//	printf("freeing pokemon now\n");
-	free(pokemon);
-//	printf("pokemon free\n");
-	
+void freePPM(struct PPM *img){
+	free(img->data);
+	free(img);
 }
 
 
@@ -204,12 +216,12 @@ int	main(int argc, char	*argv[])
 
 		struct PPM *img =	readPPM(argv[2]);
 		showPPM(img);
-		
 		struct PPM *newimg = encode("ah", img);
-	//	printf("%i", (int)strlen("asdfgh"));
 		showPPM(newimg);
+		
 		char *message = malloc(img->numPix);
 		message = decode(img, newimg);
+		
 		printf("\n%s\n", message);
 	
 		freePPM(img);
