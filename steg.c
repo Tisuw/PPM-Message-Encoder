@@ -108,7 +108,7 @@ struct PPM *dcopy(const struct PPM *img){
 struct PPM *encode(const char *text, const struct PPM *img)
 {
 	/*	TODO: Question 2c */
-	
+
 	//create a new PPM to return
 	struct PPM *newimg = malloc(sizeof(*newimg));
 	newimg = dcopy(img);
@@ -176,9 +176,12 @@ char *decode(const struct PPM *oldimg, const struct	PPM	*newimg)
 
 
 void freePPM(struct PPM *pokemon){
-	
+//	printf("freeing data now\n");
 	free(pokemon->data);
+//	printf("freeing pokemon now\n");
 	free(pokemon);
+//	printf("pokemon free\n");
+	
 }
 
 
@@ -198,21 +201,24 @@ int	main(int argc, char	*argv[])
 		struct PPM *newimg = encode("ah", img);
 	//	printf("%i", (int)strlen("asdfgh"));
 		showPPM(newimg);
-		printf("\n%s\n", decode(img, newimg));
+		char *message = malloc(img->numPix);
+		message = decode(img, newimg);
+		printf("\n%s\n", message);
+	
 		freePPM(img);
 		freePPM(newimg);
-		showPPM(newimg);
-
+		free(message);
+	
 	} else	if (argc ==	3 && strcmp(argv[1], "e") == 0)	{
 		/* Mode "e" -	encode PPM */
 
 		struct PPM *oldimg = readPPM(argv[2]);
 
 		/* prompt for a	message	from the user, and read	it into	a string */
-		char *message = malloc(oldimg->width*oldimg->height);
+		char *message = malloc(oldimg->numPix);
 		fprintf(stderr, "Please enter your message:\n");
-		scanf("%s", message);
-
+		scanf("%[^\n]", message);
+		fprintf(stderr, "%s\n", message);
 		struct PPM *newimg;
 		/* encode the text into	the	image with encode, and assign to newimg	*/
 		newimg = encode(message, oldimg);
@@ -220,8 +226,9 @@ int	main(int argc, char	*argv[])
 		/* write the image to stdout with showPPM */
 		
 		showPPM(newimg);
-	//	freePPM(oldimg);
-		//freePPM(newimg);
+		freePPM(oldimg);
+		freePPM(newimg);
+		free(message);
 
 	} else	if (argc ==	4 && strcmp(argv[1], "d") == 0)	{
 		/* Mode "d" -	decode PPM */
@@ -244,8 +251,9 @@ int	main(int argc, char	*argv[])
 		/* print the decoded message to	stdout */
 		printf("%s\n", message);
 		
-		//freePPM(oldimg);
-	//	freePPM(newimg);
+		freePPM(oldimg);
+		freePPM(newimg);
+		free(message);
 
 	} else	{
 		fprintf(stderr, "Unrecognised	or incomplete command line.\n");
