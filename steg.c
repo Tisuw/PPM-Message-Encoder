@@ -13,7 +13,7 @@ struct Pixel {
 /* An image	loaded from	a PPM file.	*/
 struct PPM {
 	/*	TODO: Question 1 */
-	char fileType[3];
+	char *fileType;
 	int height;
 	int width;
 	int max;
@@ -23,6 +23,7 @@ struct PPM {
 	struct Pixel *data;
 };
 
+
 /* Reads an	image from an open PPM file.
  * Returns a new struct	PPM, or	NULL if	the	image cannot be	read. */
 struct PPM *getPPM(FILE	* f)
@@ -30,31 +31,30 @@ struct PPM *getPPM(FILE	* f)
 	/*	TODO: Question 2a */
 	
 	struct PPM *ppm1 = malloc(sizeof(*ppm1));
+	ppm1->fileType = malloc(3*sizeof(char));
+	ppm1->comment = malloc(100*sizeof(char));
+	char *buff = malloc(100*sizeof(char));
 	
-	ppm1->comment = malloc(100);
+	fgets(ppm1->fileType, 100, f);
+
+	fgets(buff, 100, f);
+
+	while(buff[0] == 35){
+
+		strncat(ppm1->comment, buff, strlen(buff));
+	//	printf("This is the comment:\n%s\n", ppm1->comment);
+	//	printf("this is comment[0]: %d\n", ppm1->comment[0]);
+	//	printf("I am getting here %s\n", ppm1->comment);
 	
-	fscanf(f, "%s", (ppm1->fileType));
-	fgets(ppm1->comment, 100, f);
-
-
-	printf("This is the comment:\n%s\n", ppm1->comment);
-
-	if (ppm1->comment[0]==35){
-		printf("I am getting here %s\n", ppm1->comment);
-		fscanf(f, "%i", &(ppm1->width));
-		printf("%d\n", ppm1->width);
-		fscanf(f, "%i", &(ppm1->height));
-	}
-	else{
-		ppm1->width = (int) ppm1->comment[0];
-		ppm1->height = (int) ppm1->comment[1];
-		
-		fscanf(f, "%*s %i", &(ppm1->width));
-		ppm1->comment = "";
-	}
+		fgets(buff, 100, f);
+		}
+	ppm1->width = atoi(strtok(buff, " "));
+	ppm1->height = atoi(strtok(NULL, " "));
+	
+	free(buff);
 	
 	fscanf(f, "%i", &(ppm1->max));
-	printf("I am here %d\n", ppm1->height);
+	
 	ppm1->numPix = (ppm1->width)*(ppm1->height);
 	
 	ppm1->data = calloc(ppm1->numPix, sizeof(struct Pixel));
@@ -63,7 +63,7 @@ struct PPM *getPPM(FILE	* f)
 		fscanf(f, "%i %i %i", &((ppm1->data)[i].red), &((ppm1->data)[i].green), &((ppm1->data)[i].blue));
 	}
 	
-	printf("This is the contents of PPM1: width = %i\n height = %i\n max = %i\n comment = %s\n", ppm1->width, ppm1->height, ppm1->max, ppm1->comment);
+//	printf("This is the contents of PPM1: width = %i\n height = %i\n max = %i\n comment = %s\n", ppm1->width, ppm1->height, ppm1->max, ppm1->comment);
 		
 	return ppm1;
 }
@@ -110,7 +110,13 @@ struct PPM *readPPM(const char *filename)
 struct PPM *dcopy(const struct PPM *img){
 	
 	struct PPM *newimg = malloc(sizeof(*newimg));
+	
+	newimg->fileType = malloc(3*sizeof(char));
 	strcpy(newimg->fileType, img->fileType);
+	
+	newimg->comment = malloc(100*sizeof(char));
+	strcpy(newimg->comment, img->comment);
+	
 	newimg->height = img->height;
 	newimg->width = img->width;
 	newimg->max = img->max;
@@ -205,6 +211,8 @@ char *decode(const struct PPM *oldimg, const struct	PPM	*newimg)
 
 void freePPM(struct PPM *img){
 	free(img->data);
+	free(img->comment);
+	free(img->fileType);
 	free(img);
 }
 
