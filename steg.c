@@ -30,24 +30,29 @@ struct PPM *getPPM(FILE	* f)
 	/*	TODO: Question 2a */
 	
 	struct PPM *ppm1 = malloc(sizeof(*ppm1));
-	char *check = malloc(1);
+	
+	ppm1->comment = malloc(100);
 	
 	fscanf(f, "%s", (ppm1->fileType));
-	fscanf(f, "%s", check);
-	printf("%s", check);
-	printf("%d\n", !strcmp(check, "#"));
-	if (!(strcmp(check, "#"))){
-		fscanf(f, "%[^\n]", (ppm1->comment));
+	fgets(ppm1->comment, 100, f);
+
+
+	printf("This is the comment:\n%s\n", ppm1->comment);
+
+	if (ppm1->comment[0]==35){
 		printf("I am getting here %s\n", ppm1->comment);
 		fscanf(f, "%i", &(ppm1->width));
 		printf("%d\n", ppm1->width);
+		fscanf(f, "%i", &(ppm1->height));
 	}
 	else{
-		rewind(f);
+		ppm1->width = (int) ppm1->comment[0];
+		ppm1->height = (int) ppm1->comment[1];
+		
 		fscanf(f, "%*s %i", &(ppm1->width));
 		ppm1->comment = "";
 	}
-	fscanf(f, "%i", &(ppm1->height));
+	
 	fscanf(f, "%i", &(ppm1->max));
 	printf("I am here %d\n", ppm1->height);
 	ppm1->numPix = (ppm1->width)*(ppm1->height);
