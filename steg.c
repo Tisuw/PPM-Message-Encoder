@@ -31,40 +31,35 @@ struct PPM *getPPM(FILE	* f)
 	/*	TODO: Question 2a */
 	
 	struct PPM *ppm1 = malloc(sizeof(*ppm1));
-	ppm1->fileType = malloc(3*sizeof(char));
-	ppm1->comment = malloc(100*sizeof(char));
+	ppm1->fileType = malloc(4*sizeof(char));
+	ppm1->comment = calloc(100,sizeof(char));
 	char *buff = malloc(100*sizeof(char));
 	
-	fgets(ppm1->fileType, 100, f);
+	fgets(ppm1->fileType, 4*sizeof(char), f);
 
-	fgets(buff, 100, f);
+	fgets(buff, 100*sizeof(char), f);
 
 	while(buff[0] == 35){
 
 		strncat(ppm1->comment, buff, strlen(buff));
-	//	printf("This is the comment:\n%s\n", ppm1->comment);
-	//	printf("this is comment[0]: %d\n", ppm1->comment[0]);
-	//	printf("I am getting here %s\n", ppm1->comment);
-	
-		fgets(buff, 100, f);
+		fgets(buff, 100*sizeof(char), f);
+		
 		}
-	ppm1->width = atoi(strtok(buff, " "));
+	ppm1->width = atoi(strtok(buff, " ")); 		// change the last buff into ints and insert into width and height
 	ppm1->height = atoi(strtok(NULL, " "));
 	
-	free(buff);
+	free(buff);									// free the buff, now useless
 	
-	fscanf(f, "%i", &(ppm1->max));
+	fscanf(f, "%i", &(ppm1->max));				// find max and numPix
 	
 	ppm1->numPix = (ppm1->width)*(ppm1->height);
 	
-	ppm1->data = calloc(ppm1->numPix, sizeof(struct Pixel));
+	ppm1->data = calloc(ppm1->numPix, sizeof(struct Pixel));		// Create then cycle through data array, assign values to each pixel.
 	
 	for (int i = 0; i < (ppm1->numPix); i++){
-		fscanf(f, "%i %i %i", &((ppm1->data)[i].red), &((ppm1->data)[i].green), &((ppm1->data)[i].blue));
+		fscanf(f, "%i %i %i", &((ppm1->data)[i].red), &((ppm1->data)[i].green), &((ppm1->data)[i].blue));	
 	}
-	
-//	printf("This is the contents of PPM1: width = %i\n height = %i\n max = %i\n comment = %s\n", ppm1->width, ppm1->height, ppm1->max, ppm1->comment);
-		
+			
 	return ppm1;
 }
 
@@ -72,8 +67,9 @@ struct PPM *getPPM(FILE	* f)
 void showPPM(const struct PPM *img)
 {
 	/*	TODO: Question 2b */
-	printf("%s\n%s\n%i %i\n%i", img->fileType, img->comment, img->width, img->height, img->max); 
-	for(int i = 0; i<(img->numPix); i++){
+	printf("%s\n%s\n%i %i\n%i", img->fileType, img->comment, img->width, img->height, img->max); // Print values in img
+	
+	for(int i = 0; i<(img->numPix); i++){		// print the data array, adding \n at the end of each row
 		if(i%img->width == 0){
 			printf("\n");
 		}
@@ -107,6 +103,7 @@ struct PPM *readPPM(const char *filename)
 	return	img;
 }
 
+// Create a deep copy of img to edit into encoded img
 struct PPM *dcopy(const struct PPM *img){
 	
 	struct PPM *newimg = malloc(sizeof(*newimg));
@@ -209,6 +206,7 @@ char *decode(const struct PPM *oldimg, const struct	PPM	*newimg)
 }
 
 
+// Free all the elements of img
 void freePPM(struct PPM *img){
 	free(img->data);
 	free(img->comment);
