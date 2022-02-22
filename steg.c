@@ -35,23 +35,29 @@ struct PPM *getPPM(FILE	* f)
 	ppm1->comment = calloc(100,sizeof(char));
 	char *buff = malloc(100*sizeof(char));
 	
+	int buff1;
+	
 	fgets(ppm1->fileType, 4*sizeof(char), f);
+	
+	
 
-	fgets(buff, 100*sizeof(char), f);
-
-	while(buff[0] == 35){
-
-		strncat(ppm1->comment, buff, strlen(buff));
-		fgets(buff, 100*sizeof(char), f);
-		
+	while(1){
+		buff1 = fgetc(f);
+		if(buff1 == 35 || buff1 == 10){		// Check if the charater is a # or \n
+			ungetc(buff1, f);							// if it is, then add that character back to the file, and then add the whole line to ppm1->comment
+			fgets(buff, 100*sizeof(char), f);
+			strncat(ppm1->comment, buff, strlen(buff));
 		}
-	ppm1->width = atoi(strtok(buff, " ")); 		// change the last buff into ints and insert into width and height
-	ppm1->height = atoi(strtok(NULL, " "));
+		else{
+			ungetc(buff1, f);			// else there are no comments, add back the number and find the width/height
+			break;
+		}
+		}
+	free(buff);								// free the buff, now useless
 	
-	free(buff);									// free the buff, now useless
-	
+	fscanf(f, "%i", &ppm1->width);
+	fscanf(f, "%i", &ppm1->height);
 	fscanf(f, "%i", &(ppm1->max));				// find max and numPix
-	
 	ppm1->numPix = (ppm1->width)*(ppm1->height);
 	
 	ppm1->data = calloc(ppm1->numPix, sizeof(struct Pixel));		// Create then cycle through data array, assign values to each pixel.
@@ -59,7 +65,7 @@ struct PPM *getPPM(FILE	* f)
 	for (int i = 0; i < (ppm1->numPix); i++){
 		fscanf(f, "%i %i %i", &((ppm1->data)[i].red), &((ppm1->data)[i].green), &((ppm1->data)[i].blue));	
 	}
-			
+	
 	return ppm1;
 }
 
@@ -108,7 +114,7 @@ struct PPM *dcopy(const struct PPM *img){
 	
 	struct PPM *newimg = malloc(sizeof(*newimg));
 	
-	newimg->fileType = malloc(3*sizeof(char));
+	newimg->fileType = malloc(4*sizeof(char));
 	strcpy(newimg->fileType, img->fileType);
 	
 	newimg->comment = malloc(100*sizeof(char));
@@ -163,7 +169,7 @@ struct PPM *encode(const char *text, const struct PPM *img)
 		do{
 			//select a value between 1 and 5, and check that the red value in the data array is not the same as the character, else randomise again
 			randomiser = ((rand() % 4)+1);
-			if (count>50) {
+			if (count>20) {
 				fprintf(stderr, "The encoder is having trouble finding a pixel to hide your message, please try again/n");
 				exit(1);
 			}
@@ -197,6 +203,7 @@ char *decode(const struct PPM *oldimg, const struct	PPM	*newimg)
 		}
 	}
 	message[j] = 0;
+	
 	if (message[0] != 0)
 		return message;
 	else {
@@ -224,7 +231,6 @@ int	main(int argc, char	*argv[])
 	/*	Parse command-line arguments */
 	if	(argc == 3 && strcmp(argv[1], "t") == 0) {
 		/* Mode "t" -	test PPM reading and writing */
-
 		struct PPM *img =	readPPM(argv[2]);
 		showPPM(img);
 		struct PPM *newimg = encode("ah", img);
